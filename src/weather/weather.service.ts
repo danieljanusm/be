@@ -3,7 +3,8 @@ import { HttpService } from '@nestjs/axios';
 import { API } from '../constants/api-urls';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
-import { firstValueFrom, map } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { WEATHER_ERROR } from '../errors/weather.errors';
 
 @Injectable()
 export class WeatherService {
@@ -21,30 +22,35 @@ export class WeatherService {
     lng: number,
   ): Promise<WeatherApiResponse> {
     if (lat === undefined || lat === null || isNaN(lat)) {
-      throw new BadRequestException(
-        'Invalid latitude: Latitude must be a number.',
-      );
+      throw new BadRequestException(WEATHER_ERROR.INVALID_LATITUDE_ERROR);
     }
     if (lng === undefined || lng === null || isNaN(lng)) {
-      throw new BadRequestException(
-        'Invalid longitude: Longitude must be a number.',
-      );
+      throw new BadRequestException(WEATHER_ERROR.INVALID_LONGITUDE_ERROR);
     }
 
-    const url = `${API.WEATHER_DEFAULT}/forecast.json?key=${this.apiKey}&q=${lat},${lng}`;
+    const url: string = `${API.WEATHER_DEFAULT}/forecast.json?key=${this.apiKey}&q=${lat},${lng}`;
 
     try {
-      const response: AxiosResponse<any> = await firstValueFrom(
+      const response: AxiosResponse<WeatherApiResponse> = await firstValueFrom(
         this.httpService.get<WeatherApiResponse>(url),
       );
       return response.data;
     } catch (error) {
       if (error.response) {
-        console.error('Response error:', error.response.data);
+        throw new BadRequestException(
+          WEATHER_ERROR.RESPONSE_ERROR,
+          error.response.data,
+        );
       } else if (error.request) {
-        console.error('No response received:', error.request);
+        throw new BadRequestException(
+          WEATHER_ERROR.NO_RESPONSE_ERROR,
+          error.request,
+        );
       } else {
-        console.error('Request error:', error.message);
+        throw new BadRequestException(
+          WEATHER_ERROR.REQUEST_ERROR,
+          error.message,
+        );
       }
     }
   }

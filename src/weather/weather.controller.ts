@@ -9,7 +9,7 @@ export class WeatherController {
   async getForecast(
     @Query('lat', ParseFloatPipe) lat: number,
     @Query('lng', ParseFloatPipe) lng: number,
-  ): Promise<any> {
+  ): Promise<WeatherApiResponse | { error: string }> {
     if (!lat || !lng) {
       return { error: 'Latitude and longitude are required' };
     }

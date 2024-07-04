@@ -1,8 +1,8 @@
 {
-  "name": "bebebe",
+  "name": "solar_power_calculator",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "The application is used to measure current solar panel output based on the current weather for the current region and current hourly market rates.",
+  "author": "Daniel J",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

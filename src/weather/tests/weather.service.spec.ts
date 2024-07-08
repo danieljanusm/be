@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { Observable, of, Subscriber } from 'rxjs';
 import { WEATHER_ERROR } from '../errors/weather.errors';
 import { AxiosResponse } from 'axios';
-import { WeatherApiResponse } from '../models/weather.model';
+import { WeatherResponseMock } from '../constants/weather-response.mock';
 
 describe('WeatherService', () => {
   let weatherService: WeatherService;
@@ -122,23 +122,17 @@ describe('WeatherService', () => {
     });
 
     it('should return data on successful request', async (): Promise<void> => {
-      const mockResponse: WeatherApiResponse = {
-        location: null,
-        current: null,
-        forecast: null,
-      };
-
       jest.spyOn(httpService, 'get').mockImplementation(
         () =>
           new Observable(
             (observer: Subscriber<AxiosResponse<any, any>>): void => {
-              observer.next(requestCorrectResponse(mockResponse));
+              observer.next(requestCorrectResponse(WeatherResponseMock));
             },
           ),
       );
 
       await expect(weatherService.getForecast(50, 50)).resolves.toEqual(
-        mockResponse,
+        WeatherResponseMock,
       );
     });
   });

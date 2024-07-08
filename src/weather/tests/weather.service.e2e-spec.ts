@@ -4,15 +4,12 @@ import { INestApplication } from '@nestjs/common';
 import { WeatherApiResponse } from '../models/weather.model';
 import { WeatherModule } from '../weather.module';
 import { WeatherService } from '../weather.service';
+import { WeatherResponseMock } from '../constants/weather-response.mock';
 
 describe('Weather', () => {
   let app: INestApplication;
   const weatherService = {
-    getForecast: (): WeatherApiResponse => ({
-      location: null,
-      current: null,
-      forecast: null,
-    }),
+    getForecast: (): WeatherApiResponse => WeatherResponseMock,
   };
 
   beforeAll(async () => {
@@ -31,7 +28,7 @@ describe('Weather', () => {
     return request(app.getHttpServer())
       .get('/weather')
       .expect(200)
-      .expect(weatherService.getForecast());
+      .expect(WeatherResponseMock);
   });
 
   afterAll(async () => {

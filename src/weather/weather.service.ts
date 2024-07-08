@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { API } from '../constants/api-urls';
 import { ConfigService } from '@nestjs/config';
 import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
-import { WEATHER_ERROR } from '../errors/weather.errors';
+import { WEATHER_ERROR } from './errors/weather.errors';
+import { WeatherApiResponse } from './models/weather.model';
+import { API } from './constants/weather.constants';
 
 @Injectable()
 export class WeatherService {
@@ -21,13 +22,6 @@ export class WeatherService {
     lat: number,
     lng: number,
   ): Promise<WeatherApiResponse> {
-    if (lat === undefined || lat === null || isNaN(lat)) {
-      throw new BadRequestException(WEATHER_ERROR.INVALID_LATITUDE_ERROR);
-    }
-    if (lng === undefined || lng === null || isNaN(lng)) {
-      throw new BadRequestException(WEATHER_ERROR.INVALID_LONGITUDE_ERROR);
-    }
-
     const url: string = `${API.WEATHER_DEFAULT}/forecast.json?key=${this.apiKey}&q=${lat},${lng}`;
 
     try {
@@ -38,18 +32,27 @@ export class WeatherService {
     } catch (error) {
       if (error.response) {
         throw new BadRequestException(
-          WEATHER_ERROR.RESPONSE_ERROR,
-          error.response.data,
+          {
+            ...WEATHER_ERROR.RESPONSE_ERROR,
+            error: error.response.data,
+          },
+          '400',
         );
       } else if (error.request) {
         throw new BadRequestException(
-          WEATHER_ERROR.NO_RESPONSE_ERROR,
-          error.request,
+          {
+            ...WEATHER_ERROR.NO_RESPONSE_ERROR,
+            error: error.request,
+          },
+          '400',
         );
       } else {
         throw new BadRequestException(
-          WEATHER_ERROR.REQUEST_ERROR,
-          error.message,
+          {
+            ...WEATHER_ERROR.REQUEST_ERROR,
+            error: error.message,
+          },
+          '400',
         );
       }
     }

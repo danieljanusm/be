@@ -128,7 +128,7 @@ interface Forecast {
   }[];
 }
 
-interface WeatherApiResponse {
+export interface WeatherApiResponse {
   location: Location;
   current: Current;
   forecast: Forecast;

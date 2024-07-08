@@ -1,5 +1,7 @@
-import { Controller, Get, ParseFloatPipe, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { WeatherService } from './weather.service';
+import { WeatherApiResponse } from './models/weather.model';
+import { GetForecastQuery } from './input/get-forecast.query';
 
 @Controller('weather')
 export class WeatherController {
@@ -7,12 +9,8 @@ export class WeatherController {
 
   @Get()
   async getForecast(
-    @Query('lat', ParseFloatPipe) lat: number,
-    @Query('lng', ParseFloatPipe) lng: number,
+    @Query() query: GetForecastQuery,
   ): Promise<WeatherApiResponse | { error: string }> {
-    if (!lat || !lng) {
-      return { error: 'Latitude and longitude are required' };
-    }
-    return await this.weatherService.getForecast(lat, lng);
+    return await this.weatherService.getForecast(query.lat, query.lng);
   }
 }

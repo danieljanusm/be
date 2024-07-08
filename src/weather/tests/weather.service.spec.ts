@@ -3,20 +3,43 @@ import { WeatherService } from '../weather.service';
 import { BadRequestException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { of } from 'rxjs';
-import { WEATHER_ERROR } from '../../errors/weather.errors';
+import { Observable, of, Subscriber } from 'rxjs';
+import { WEATHER_ERROR } from '../errors/weather.errors';
+import { AxiosResponse } from 'axios';
+import { WeatherApiResponse } from '../models/weather.model';
 
 describe('WeatherService', () => {
   let weatherService: WeatherService;
+  let httpService: HttpService;
 
-  beforeEach(async () => {
+  const requestErrorResponse = (status = 400): AxiosResponse => ({
+    status,
+    statusText: 'Bad Request',
+    headers: null,
+    config: null,
+    data: {
+      statusCode: status,
+      error: 'Bad Request',
+      message: {},
+    },
+  });
+
+  const requestCorrectResponse = (data: any): AxiosResponse => ({
+    status: 200,
+    statusText: 'Success',
+    headers: null,
+    config: null,
+    data,
+  });
+
+  beforeAll(async (): Promise<void> => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WeatherService,
         {
           provide: HttpService,
           useValue: {
-            get: jest.fn(() => of({ data: {} })),
+            get: jest.fn().mockImplementation(() => of()),
           },
         },
         {
@@ -28,6 +51,7 @@ describe('WeatherService', () => {
       ],
     }).compile();
 
+    httpService = module.get(HttpService);
     weatherService = module.get<WeatherService>(WeatherService);
   });
 
@@ -36,58 +60,86 @@ describe('WeatherService', () => {
   });
 
   describe('getForecast', () => {
-    it('should throw BadRequestException for invalid latitude', async () => {
-      const invalidLatitudes = [undefined, null, NaN];
-      for (const lat of invalidLatitudes) {
-        try {
-          await weatherService.getForecast(lat, 10);
-        } catch (error) {
-          expect(error).toBeInstanceOf(BadRequestException);
-          expect(error.response.code).toEqual(
-            WEATHER_ERROR.INVALID_LATITUDE_ERROR.code,
-          );
-        }
-      }
+    // it's no longer necessary once there is class validator
+
+    // const invalidValues: number[] = [undefined, null, NaN];
+    //
+    // for (const lat of invalidValues) {
+    //   it(`should throw BadRequestException for ${lat} as latitude`, async (): Promise<void> => {
+    //     const expectedError = new BadRequestException(
+    //       WEATHER_ERROR.INVALID_LATITUDE_ERROR,
+    //       '400',
+    //     );
+    //
+    //     const response = weatherService.getForecast(lat, 10);
+    //
+    //     await expect(response).rejects.toThrow(expectedError);
+    //     await expect(response).rejects.toBe(
+    //       WEATHER_ERROR.INVALID_LATITUDE_ERROR,
+    //     );
+    //   });
+    // }
+    //
+    // for (const lng of invalidValues) {
+    //   it(`should throw BadRequestException for ${lng} as longitude`, async (): Promise<void> => {
+    //     const expectedError = new BadRequestException(
+    //       WEATHER_ERROR.INVALID_LONGITUDE_ERROR,
+    //       '400',
+    //     );
+    //
+    //     await expect(weatherService.getForecast(10, lng)).rejects.toThrow(
+    //       expectedError,
+    //     );
+    //   });
+    // }
+
+    it('should throw BadRequestException for response error', async (): Promise<void> => {
+      const mockResponse = new BadRequestException(
+        {
+          ...WEATHER_ERROR.RESPONSE_ERROR,
+          error: {},
+        },
+        '400',
+      );
+      jest.spyOn(httpService, 'get').mockImplementation(
+        () =>
+          new Observable(
+            (observer: Subscriber<AxiosResponse<any, any>>): void => {
+              observer.error({
+                response: requestErrorResponse(),
+                config: null,
+                isAxiosError: true,
+                name: '',
+                message: 'error message',
+                toJSON: jest.fn(),
+              });
+            },
+          ),
+      );
+      await expect(weatherService.getForecast(100, 100)).rejects.toThrow(
+        mockResponse,
+      );
     });
 
-    it('should throw BadRequestException for invalid longitude', async () => {
-      const invalidLongitudes = [undefined, null, NaN];
-      for (const lng of invalidLongitudes) {
-        try {
-          await weatherService.getForecast(10, lng);
-        } catch (error) {
-          expect(error.response.code).toEqual(
-            WEATHER_ERROR.INVALID_LONGITUDE_ERROR.code,
-          );
-        }
-      }
-    });
-
-    it('should throw BadRequestException for response error', async () => {
-      const error = {
-        response: WEATHER_ERROR.RESPONSE_ERROR,
-      };
-      jest.spyOn(weatherService, 'getForecast').mockRejectedValue(error);
-
-      try {
-        await weatherService.getForecast(100, 100);
-      } catch (error) {
-        expect(error.response.code).toEqual(WEATHER_ERROR.RESPONSE_ERROR.code);
-      }
-    });
-
-    it('should return data on successful request', async () => {
+    it('should return data on successful request', async (): Promise<void> => {
       const mockResponse: WeatherApiResponse = {
         location: null,
         current: null,
         forecast: null,
       };
 
-      jest.spyOn(weatherService, 'getForecast').mockResolvedValue(mockResponse);
+      jest.spyOn(httpService, 'get').mockImplementation(
+        () =>
+          new Observable(
+            (observer: Subscriber<AxiosResponse<any, any>>): void => {
+              observer.next(requestCorrectResponse(mockResponse));
+            },
+          ),
+      );
 
-      await weatherService
-        .getForecast(100, 100)
-        .then((response) => expect(response).toEqual(mockResponse));
+      await expect(weatherService.getForecast(50, 50)).resolves.toEqual(
+        mockResponse,
+      );
     });
   });
 });

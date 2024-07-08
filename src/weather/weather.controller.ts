@@ -8,7 +8,7 @@ export class WeatherController {
   constructor(private readonly weatherService: WeatherService) {}
 
   @Get()
-  async getForecast(
+  async getWeather(
     @Query() query: GetForecastQuery,
   ): Promise<WeatherApiResponse | { error: string }> {
     return await this.weatherService.getForecast(query.lat, query.lng);

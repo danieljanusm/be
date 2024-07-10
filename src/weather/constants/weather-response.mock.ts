@@ -1,6 +1,6 @@
 import { WeatherApiResponse } from '../models/weather.model';
 
-export const WeatherResponseMock: WeatherApiResponse = {
+export const WEATHER_RESPONSE_MOCK: WeatherApiResponse = {
   location: {
     name: 'Agra',
     region: 'Uttar Pradesh',

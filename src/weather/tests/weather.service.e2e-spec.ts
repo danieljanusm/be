@@ -30,7 +30,8 @@ describe('Weather', () => {
     const lat = 50;
     const lng = 50;
     return request(app.getHttpServer())
-      .get(`/weather?lat=${lat}&lng=${lng}`)
+      .get('/weather')
+      .query({ lat, lng })
       .expect(200)
       .expect(WEATHER_RESPONSE_MOCK);
   });

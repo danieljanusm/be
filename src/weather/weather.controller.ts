@@ -2,7 +2,8 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { WeatherService } from './weather.service';
 import { WeatherApiResponse } from './models/weather.model';
 import { GetForecastQuery } from './input/get-forecast.query';
-import { ApiBadRequestResponse } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBadRequestResponse } from '@nestjs/swagger';
+import { WeatherApiResponseDto } from './responses/weather.response';
 
 @Controller('weather')
 export class WeatherController {
@@ -12,6 +13,9 @@ export class WeatherController {
   @ApiBadRequestResponse({
     description: 'Validation error',
     schema: { type: 'object', properties: { message: { type: 'string' } } },
+  })
+  @ApiAcceptedResponse({
+    type: WeatherApiResponseDto,
   })
   async getWeather(
     @Query() query: GetForecastQuery,

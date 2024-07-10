@@ -5,7 +5,7 @@ import { AxiosResponse } from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { WEATHER_ERROR } from './errors/weather.errors';
 import { WeatherApiResponse } from './models/weather.model';
-import { API } from './constants/weather.constants';
+import { WEATHER_API } from './constants/weather.constants';
 
 @Injectable()
 export class WeatherService {
@@ -22,7 +22,7 @@ export class WeatherService {
     lat: number,
     lng: number,
   ): Promise<WeatherApiResponse> {
-    const url: string = `${API.WEATHER_DEFAULT}/forecast.json?key=${this.apiKey}&q=${lat},${lng}`;
+    const url: string = `${WEATHER_API.WEATHER_DEFAULT}/forecast.json?key=${this.apiKey}&q=${lat},${lng}`;
 
     try {
       const response: AxiosResponse<WeatherApiResponse> = await firstValueFrom(

@@ -38,9 +38,9 @@ describe('Weather', () => {
   it(`/GET weather should return error for incorrect lat`, async () => {
     const lat = NaN;
     const lng = 50;
-    const response: Response = await request(app.getHttpServer()).get(
-      `/weather?lat=${lat}&lng=${lng}`,
-    );
+    const response: Response = await request(app.getHttpServer())
+      .get('/weather')
+      .query({ lat, lng });
     expect(response.body.statusCode).toBe(400);
     expect(response.body.message).toContain('lat must not be greater than 90');
     expect(response.body.message).toContain('lat must not be less than -90');

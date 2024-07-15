@@ -7,6 +7,8 @@ import { Tokens } from './models/tokens.type';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './models/jwt-payload.type';
 import { UsersService } from '../users/users.service';
+import { DatabaseRecord } from '../common/models/databaseRecord.model';
+import { User } from '../users/models/user.type';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +20,7 @@ export class AuthService {
   ) {}
 
   async register(dto: CreateUserDto): Promise<Tokens> {
-    const user = await this.usersService.createUser(dto);
+    const user: DatabaseRecord<User> = await this.usersService.createUser(dto);
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);

@@ -20,7 +20,7 @@ export class UsersService {
     const salt: string = await bcrypt.genSalt();
     const hash: string = await bcrypt.hash(userDto.password, salt);
 
-    const user = await this.prisma.user
+    const user: DatabaseRecord<User> = await this.prisma.user
       .create({
         data: {
           email: userDto.email,
@@ -42,40 +42,41 @@ export class UsersService {
     parameterToUpdate: keyof User,
     value: T,
   ): Promise<DatabaseRecord<User>> {
-    return this.prisma.user
-      .findFirst({
-        where: {
-          id: userId,
-        },
-      })
-      .then(() =>
-        this.prisma.user.update({
-          where: { id: userId },
-          data: { [parameterToUpdate]: value },
-        }),
-      )
-      .catch(() => {
-        throw new NotFoundException();
-      });
+    const user: DatabaseRecord<User> = await this.prisma.user.findFirst({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found`);
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { [parameterToUpdate]: value },
+    });
   }
 
   public async getUserById(id: string): Promise<DatabaseRecord<User>> {
-    return this.prisma.user
-      .findUnique({
-        where: { id },
-      })
-      .catch(() => {
-        throw new NotFoundException();
-      });
+    const user: DatabaseRecord<User> = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 
   public async getUserByEmail(email: string): Promise<DatabaseRecord<User>> {
-    return this.prisma.user
-      .findUnique({
-        where: { email },
-      })
-      .catch(() => {
-        throw new NotFoundException();
-      });
+    const user: DatabaseRecord<User> = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    return user;
   }
 }

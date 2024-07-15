@@ -2,11 +2,11 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/database/prisma.service';
-import { AuthDto } from './input/auth.dto';
+import { CreateUserDto } from './input/auth.dto';
 import { Tokens } from './models/tokens.type';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './models/jwt-payload.type';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class AuthService {
@@ -14,27 +14,11 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private usersService: UsersService,
   ) {}
 
-  async register(dto: AuthDto): Promise<Tokens> {
-    const salt = await bcrypt.genSalt();
-    const hash = await bcrypt.hash(dto.password, salt);
-
-    const user = await this.prisma.user
-      .create({
-        data: {
-          email: dto.email,
-          hash,
-        },
-      })
-      .catch((error) => {
-        if (error instanceof PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            throw new ForbiddenException('Credentials incorrect');
-          }
-        }
-        throw error;
-      });
+  async register(dto: CreateUserDto): Promise<Tokens> {
+    const user = await this.usersService.createUser(dto);
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRtHash(user.id, tokens.refresh_token);
@@ -42,12 +26,8 @@ export class AuthService {
     return tokens;
   }
 
-  async login(dto: AuthDto): Promise<Tokens> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: dto.email,
-      },
-    });
+  async login(dto: CreateUserDto): Promise<Tokens> {
+    const user = await this.usersService.getUserByEmail(dto.email);
 
     if (!user) throw new ForbiddenException('Access Denied');
 
@@ -76,11 +56,7 @@ export class AuthService {
   }
 
   async refreshTokens(userId: string, rt: string): Promise<Tokens> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+    const user = await this.usersService.getUserById(userId);
     if (!user || !user.hashedRt) throw new ForbiddenException('Access Denied');
 
     const rtMatches = await bcrypt.compare(user.hashedRt, rt);
@@ -96,14 +72,7 @@ export class AuthService {
     const salt = await bcrypt.genSalt();
     const hash = await bcrypt.hash(rt, salt);
 
-    await this.prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        hashedRt: hash,
-      },
-    });
+    await this.usersService.updateUser<string>(userId, 'hashedRt', hash);
   }
 
   async getTokens(userId: string, email: string): Promise<Tokens> {

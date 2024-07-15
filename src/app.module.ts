@@ -5,7 +5,8 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './common/guards';
-import { AuthModule } from './auth/auth/auth.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from './auth/auth/auth.module';
     }),
     WeatherModule,
     AuthModule,
+    UsersModule,
   ],
   providers: [
     {

@@ -7,14 +7,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './input/auth.dto';
+import { CreateUserDto } from './input/auth.dto';
 import { Tokens } from './models/tokens.type';
-import {
-  GetCurrentUser,
-  GetCurrentUserId,
-  Public,
-} from '../../common/decorators';
-import { RtGuard } from '../../common/guards';
+import { GetCurrentUser, GetCurrentUserId, Public } from '../common/decorators';
+import { RtGuard } from '../common/guards';
 
 @Controller('auth')
 export class AuthController {
@@ -23,14 +19,14 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  register(@Body() dto: AuthDto): Promise<Tokens> {
+  register(@Body() dto: CreateUserDto): Promise<Tokens> {
     return this.authService.register(dto);
   }
 
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(@Body() dto: AuthDto): Promise<Tokens> {
+  login(@Body() dto: CreateUserDto): Promise<Tokens> {
     return this.authService.login(dto);
   }
 

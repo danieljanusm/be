@@ -6,7 +6,7 @@ services:
     image: postgres:16.3
     restart: always
     ports:
-      - "5432:5432"
+      - ${DATABASE_USER}
     env_file:
       - .env
     environment:
@@ -14,7 +14,7 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - ${DATABASE_DATA}
     networks:
       - fullstack-project
 

@@ -3,4 +3,5 @@ export interface User {
   email: string;
   hash: string;
   hashedRt: string;
+  name: string;
 }

@@ -9,10 +9,14 @@ import * as bcrypt from 'bcrypt';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { DatabaseRecord } from '../common/models/databaseRecord.model';
 import { User } from './models/user.type';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   public async createUser(
     userDto: CreateUserDto,
@@ -24,8 +28,13 @@ export class UsersService {
       .create({
         data: {
           email: userDto.email,
+          name: userDto.name,
           hash,
         },
+      })
+      .then((user) => {
+        this.mailService.sendUserConfirmation(user);
+        return user;
       })
       .catch((error) => {
         if (error instanceof PrismaClientKnownRequestError) {

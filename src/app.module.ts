@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { WeatherModule } from './weather/weather.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './common/guards';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -13,9 +13,9 @@ import { UsersModule } from './users/users.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    WeatherModule,
     AuthModule,
     UsersModule,
+    MailModule,
   ],
   providers: [
     {

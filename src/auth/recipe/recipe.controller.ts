@@ -1,8 +1,9 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Post,
   Query,
   Req,
@@ -14,12 +15,14 @@ import {
   PaginatedRecord,
 } from '../../common/models/databaseRecord.model';
 import { Recipe } from './model/recipe.model';
+import { Public } from '../../common/decorators';
 
 @Controller('recipe')
 export class RecipeController {
   constructor(private recipeService: RecipeService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   createRecipe(
     @Body() createRecipeDto: CreateRecipeDto,
     @Req() req,
@@ -27,7 +30,9 @@ export class RecipeController {
     return this.recipeService.createRecipe(createRecipeDto, req.user.id);
   }
 
+  @Public()
   @Get()
+  @HttpCode(HttpStatus.OK)
   getRecipes(
     @Query('id') id?: string,
     @Query('authorId') authorId?: string,

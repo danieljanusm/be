@@ -7,6 +7,8 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { RecipeService } from './recipe.service';
 import { CreateRecipeDto } from './input/createRecipe.dto';
@@ -16,6 +18,9 @@ import {
 } from '../../common/models/databaseRecord.model';
 import { Recipe } from './model/recipe.model';
 import { Public } from '../../common/decorators';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('recipe')
 export class RecipeController {
@@ -23,11 +28,28 @@ export class RecipeController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      storage: diskStorage({
+        destination: './uploads/photos',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
   createRecipe(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createRecipeDto: CreateRecipeDto,
     @Req() req,
   ): Promise<DatabaseRecord<Recipe>> {
-    return this.recipeService.createRecipe(createRecipeDto, req.user.id);
+    const photoUrl = file ? `/uploads/photos/${file.filename}` : null;
+    const { photo, ...recipe } = createRecipeDto;
+    recipe.servings = Number(recipe.servings);
+    return this.recipeService.createRecipe(recipe, req.user.id, photoUrl);
   }
 
   @Public()

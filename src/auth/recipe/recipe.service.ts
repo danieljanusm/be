@@ -17,6 +17,7 @@ export class RecipeService {
   public async createRecipe(
     recipe: CreateRecipeDto,
     userId: string,
+    photoUrl?: string,
   ): Promise<DatabaseRecord<Recipe>> {
     const author: DatabaseRecord<User> = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -32,6 +33,7 @@ export class RecipeService {
         rate: new Prisma.Decimal(0),
         rateCount: 0,
         author: { connect: author },
+        photoUrl,
       },
     });
   }

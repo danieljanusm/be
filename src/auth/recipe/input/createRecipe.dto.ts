@@ -1,4 +1,4 @@
-import { IsArray, IsInt, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsArray, IsNumberString, IsOptional, IsString } from 'class-validator';
 
 export class CreateRecipeDto {
   @IsString()
@@ -7,12 +7,11 @@ export class CreateRecipeDto {
   @IsString()
   shortDescription: string;
 
-  @IsInt()
+  @IsNumberString()
   servings: number;
 
   @IsOptional()
-  @IsUrl()
-  photoUrl?: string;
+  photo?: string;
 
   @IsString()
   description: string;

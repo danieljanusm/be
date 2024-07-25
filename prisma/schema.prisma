@@ -8,14 +8,32 @@ datasource db {
 }
 
 model User {
-  id        String      @id @default(uuid())
+  id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  email    String  @unique
-  hash     String
-  hashedRt String?
-  name     String @default("unknown")
+  email     String   @unique
+  hash      String
+  hashedRt  String?
+  name      String   @default("unknown")
+  recipies  Recipe[]
 
   @@map("users")
+}
+
+model Recipe {
+  id               String   @id @default(uuid())
+  authorId         String
+  rate             Decimal  @default(0)
+  name             String
+  shortDescription String
+  rateCount        Int      @default(0)
+  servings         Int
+  photoUrl         String?
+  description      String
+  tags             String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  author           User     @relation(fields: [authorId], references: [id])
+
+  @@map("recipe")
 }
